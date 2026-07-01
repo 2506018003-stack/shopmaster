@@ -2,10 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from datetime import datetime
 import os
 
 from api.database import engine, Base
-from api.routers import products, orders, auth, admin, crm, promo, export, health
+from api.routers import products, orders, auth, admin, crm, promo, export
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,20 +19,22 @@ app = FastAPI(
     title="ShopMaster API",
     version="2.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
+    redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # В production заменить на конкретные домены
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# API роутеры
-app.include_router(health.router, tags=["health"])
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "shopmaster", "version": "2.0.0", "timestamp": str(datetime.utcnow())}
+
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(products.router, prefix="/products", tags=["products"])
 app.include_router(orders.router, prefix="/orders", tags=["orders"])
@@ -40,25 +43,23 @@ app.include_router(crm.router, prefix="/crm", tags=["crm"])
 app.include_router(promo.router, prefix="/promo", tags=["promo"])
 app.include_router(export.router, prefix="/export", tags=["export"])
 
-# Статика — ВАЖНО: порядок имеет значение, static после API роутеров
 app.mount("/miniapp", StaticFiles(directory="miniapp", html=True), name="miniapp")
 app.mount("/crm", StaticFiles(directory="crm", html=True), name="crm")
 
-# WebSocket
 class ConnectionManager:
     def __init__(self):
         self.active_connections = []
-    
+
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-    
+
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
-    
+
     async def broadcast(self, message: str):
-        for connection in self.active_connections[:]:
+        for connection in self.active_connections:
             try:
                 await connection.send_text(message)
             except:
@@ -74,6 +75,4 @@ async def websocket_orders(websocket: WebSocket):
             data = await websocket.receive_text()
             await manager.broadcast(data)
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception:
         manager.disconnect(websocket)

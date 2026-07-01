@@ -17,10 +17,12 @@ services:
           property: connectionString
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: DEBUG
+        value: "true"
       - key: WEBAPP_URL
-        value: https://shopmaster-api.onrender.com/miniapp
+        value: https://telegram-autoposter-z0dw.onrender.com/miniapp
       - key: CRM_URL
-        value: https://shopmaster-api.onrender.com/crm
+        value: https://telegram-autoposter-z0dw.onrender.com/crm
 
   - type: worker
     name: shopmaster-bot
