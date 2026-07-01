@@ -10,13 +10,10 @@ services:
         sync: false
       - key: ADMIN_IDS
         value: "7804481895"
-      # ВСТАВЬТЕ ВРУЧНУЮ В DASHBOARD:
-      # DATABASE_URL=postgresql+asyncpg://shopmaster:pass@host:5432/shopmaster
-      # REDIS_URL=redis://host:6379
       - key: DATABASE_URL
-        sync: false
+        value: "sqlite+aiosqlite:///./shopmaster.db"
       - key: REDIS_URL
-        sync: false
+        value: "redis://localhost:6379/0"
       - key: WEBAPP_URL
         value: https://telegram-autoposter-z0dw.onrender.com/miniapp
       - key: CRM_URL
@@ -42,11 +39,6 @@ services:
       - key: ADMIN_IDS
         value: "7804481895"
       - key: DATABASE_URL
-        sync: false
+        value: "sqlite+aiosqlite:///./shopmaster.db"
       - key: REDIS_URL
-        sync: false
-
-databases:
-  - name: shopmaster-db
-    databaseName: shopmaster
-    user: shopmaster
+        value: "redis://localhost:6379/0"
