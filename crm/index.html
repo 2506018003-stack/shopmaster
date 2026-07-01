@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f4a261">
+    <title>ShopMaster CRM</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2hvcE1hc3RlciBDUk0iLCJzaG9ydF9uYW1lIjoiQ1JNIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmYWY5ZjYiLCJ0aGVtZV9jb2xvciI6IiNmNGEyNjEifQ==">
+    <style>
+        :root {
+            --primary: #f4a261; --primary-dark: #e76f51; --secondary: #2a9d8f;
+            --bg: #f5f5f0; --surface: #ffffff; --text: #2b2d42; --text-light: #8d99ae;
+            --success: #2a9d8f; --warning: #e9c46a; --danger: #e76f51;
+            --shadow: 0 4px 24px rgba(0,0,0,0.08); --radius: 20px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        .app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg); }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; padding: 28px 24px; border-radius: 0 0 var(--radius) var(--radius);
+            box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .sync-btn {
+            background: rgba(255,255,255,0.2); border: none; color: white; width: 44px; height: 44px;
+            border-radius: 14px; font-size: 20px; cursor: pointer; backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; transition: transform 0.3s;
+        }
+        .sync-btn.spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; margin-top: -10px; }
+        .stat-card {
+            background: var(--surface); padding: 20px 12px; border-radius: var(--radius);
+            text-align: center; box-shadow: var(--shadow); position: relative; overflow: hidden;
+        }
+        .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--primary); border-radius: 3px 3px 0 0; }
+        .stat-value { font-size: 28px; font-weight: 800; color: var(--primary); line-height: 1; }
+        .stat-label { font-size: 12px; color: var(--text-light); margin-top: 8px; font-weight: 500; }
+
+        .filters { display: flex; gap: 8px; padding: 0 20px 16px; overflow-x: auto; scrollbar-width: none; }
+        .filters::-webkit-scrollbar { display: none; }
+        .filter-btn {
+            background: var(--surface); border: 2px solid var(--border); padding: 10px 18px;
+            border-radius: 24px; font-size: 14px; font-weight: 600; color: var(--text-light);
+            cursor: pointer; white-space: nowrap; transition: all 0.2s;
+        }
+        .filter-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(244, 162, 97, 0.08); }
+
+        .orders-list { padding: 0 20px 100px; }
+        .order-card {
+            background: var(--surface); border-radius: var(--radius); padding: 24px;
+            margin-bottom: 16px; box-shadow: var(--shadow); position: relative; overflow: hidden; transition: transform 0.2s;
+        }
+        .order-card:active { transform: scale(0.98); }
+        .order-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+        .order-card.status-pending::before { background: var(--warning); }
+        .order-card.status-processing::before { background: var(--primary); }
+        .order-card.status-shipped::before { background: #6366f1; }
+        .order-card.status-delivered::before { background: var(--success); }
+        .order-card.status-cancelled::before { background: var(--danger); }
+
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .order-id { font-size: 20px; font-weight: 800; }
+        .order-time { font-size: 12px; color: var(--text-light); font-weight: 500; }
+
+        .customer-block { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .avatar { width: 48px; height: 48px; border-radius: 16px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; flex-shrink: 0; }
+        .customer-info { flex: 1; min-width: 0; }
+        .customer-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .customer-phone { font-size: 14px; color: var(--text-light); font-weight: 500; }
+        .customer-address { font-size: 13px; color: var(--text-light); margin-top: 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .items-list { background: var(--bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .item-row:last-child { border-bottom: none; }
+        .item-name { font-weight: 600; }
+        .item-qty { color: var(--text-light); margin-left: 8px; }
+        .item-price { font-weight: 700; }
+
+        .order-total { display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+        .total-price { color: var(--primary); font-size: 24px; }
+        .discount-row { font-size: 14px; color: var(--success); margin-bottom: 8px; }
+
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .action-btn { padding: 14px; border-radius: 14px; border: none; font-size: 14px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .action-btn:active { opacity: 0.8; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+        .btn-telegram { background: #0088cc; color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-export { background: #6366f1; color: white; }
+
+        .fab { position: fixed; bottom: 100px; right: 20px; width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #0088cc, #00a8e8); color: white; border: none; font-size: 24px;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.4); cursor: pointer; z-index: 90; display: flex;
+            align-items: center; justify-content: center; transition: transform 0.3s; }
+        .fab:active { transform: scale(0.9); }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
+            background: var(--surface); display: flex; justify-content: space-around; padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.1); border-radius: var(--radius) var(--radius) 0 0; z-index: 100; }
+        .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-light); font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 12px; position: relative; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 24px; }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--success); color: white; padding: 14px 28px; border-radius: 14px; font-size: 14px;
+            font-weight: 700; box-shadow: var(--shadow); z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; z-index: 200; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: var(--surface); width: 100%; border-radius: var(--radius) var(--radius) 0 0;
+            padding: 28px 24px; max-height: 85vh; overflow-y: auto; transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 22px; font-weight: 800; }
+        .modal-close { width: 40px; height: 40px; border-radius: 12px; border: none; background: var(--bg); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-light); }
+        .empty-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.6; }
+        .empty-text { font-size: 16px; font-weight: 500; }
+
+        .detail-section { margin-bottom: 24px; }
+        .detail-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
+        .detail-value { font-size: 16px; font-weight: 600; line-height: 1.5; }
+
+        .export-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px 20px; }
+        .export-btn { padding: 16px; border-radius: 16px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; color: white; }
+        .export-excel { background: #217346; }
+        .export-csv { background: #217346; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="header-top">
+                <h1>ShopMaster CRM</h1>
+                <button class="sync-btn" id="sync-btn" onclick="syncFromTelegram()" title="Синхронизировать">🔄</button>
+            </div>
+            <p style="opacity: 0.9; font-size: 15px;">Управление заказами в реальном времени</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card"><div class="stat-value" id="stat-new">0</div><div class="stat-label">Новые</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-processing">0</div><div class="stat-label">В работе</div></div>
+            <div class="stat-card"><div class="stat-value" id="stat-revenue">0</div><div class="stat-label">₽ сегодня</div></div>
+        </div>
+
+        <div class="export-buttons">
+            <button class="export-btn export-excel" onclick="exportData('excel')">📊 Excel</button>
+            <button class="export-btn export-csv" onclick="exportData('csv')">📄 CSV</button>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all" onclick="filterOrders('all')">Все</button>
+            <button class="filter-btn" data-filter="pending" onclick="filterOrders('pending')">⏳ Новые</button>
+            <button class="filter-btn" data-filter="processing" onclick="filterOrders('processing')">📦 В обработке</button>
+            <button class="filter-btn" data-filter="shipped" onclick="filterOrders('shipped')">🚚 Отправлены</button>
+            <button class="filter-btn" data-filter="delivered" onclick="filterOrders('delivered')">✅ Доставлены</button>
+        </div>
+
+        <div class="orders-list" id="orders-list">
+            <div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Загрузка заказов...</div></div>
+        </div>
+
+        <button class="fab" onclick="syncFromTelegram()" title="Забрать заявки">✈️</button>
+
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="showTab('orders')"><span class="nav-icon">📦</span><span>Заказы</span></button>
+            <button class="nav-item" onclick="showTab('products')"><span class="nav-icon">🛍</span><span>Товары</span></button>
+            <button class="nav-item" onclick="showTab('analytics')"><span class="nav-icon">📊</span><span>Аналитика</span></button>
+            <button class="nav-item" onclick="showTab('settings')"><span class="nav-icon">⚙️</span><span>Настройки</span></button>
+        </nav>
+    </div>
+
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header"><div class="modal-title">Детали заказа</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">✓ Синхронизировано</div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let orders = [];
+        let currentFilter = 'all';
+        let ws = null;
+
+        async function loadOrders() {
+            try {
+                const res = await fetch(`${API_URL}/crm/orders`, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('crm_token') } });
+                if (!res.ok) throw new Error('Auth failed');
+                orders = await res.json();
+                renderOrders();
+                updateStats();
+            } catch (e) {
+                document.getElementById('orders-list').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Ошибка загрузки</div></div>`;
+            }
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            const filtered = currentFilter === 'all' ? orders : orders.filter(o => o.status === currentFilter);
+
+            if (!filtered.length) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Нет заказов</div></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(order => {
+                const initials = order.user_name ? order.user_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) : '?';
+                return `
+                    <div class="order-card status-${order.status}" onclick="showOrderDetail(${order.id})">
+                        <div class="order-header">
+                            <div><div class="order-id">#${order.id}</div><div class="order-time">${new Date(order.created_at).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</div></div>
+                            <span style="font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; background: ${getStatusColor(order.status)}20; color: ${getStatusColor(order.status)};">${getStatusText(order.status)}</span>
+                        </div>
+                        <div class="customer-block">
+                            <div class="avatar">${initials}</div>
+                            <div class="customer-info">
+                                <div class="customer-name">${order.user_name || 'Неизвестный клиент'}</div>
+                                <div class="customer-phone">${order.phone || 'Нет телефона'}</div>
+                                <div class="customer-address">${order.shipping_address || 'Адрес не указан'}</div>
+                            </div>
+                        </div>
+                        <div class="items-list">
+                            ${order.items.map(item => `
+                                <div class="item-row"><div><span class="item-name">${item.name}</span><span class="item-qty">x${item.quantity}</span></div><div class="item-price">${(item.price * item.quantity).toFixed(0)} ₽</div></div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total"><span>Итого</span><span class="total-price">${order.final_amount} ₽</span></div>
+                        ${order.discount_amount > 0 ? `<div class="discount-row">Скидка по промокоду: -${order.discount_amount} ₽</div>` : ''}
+                        <div class="actions">${getActionButtons(order)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusColor(status) {
+            const colors = {pending: '#e9c46a', processing: '#f4a261', shipped: '#6366f1', delivered: '#2a9d8f', cancelled: '#e76f51'};
+            return colors[status] || '#8d99ae';
+        }
+
+        function getStatusText(status) {
+            const map = {pending: 'Новый', processing: 'В обработке', shipped: 'Отправлен', delivered: 'Доставлен', cancelled: 'Отменён'};
+            return map[status] || status;
+        }
+
+        function getActionButtons(order) {
+            const buttons = [];
+            if (order.status === 'pending') buttons.push(`<button class="action-btn btn-primary" onclick="event.stopPropagation(); updateStatus(${order.id}, 'processing')">В обработку</button>`);
+            else if (order.status === 'processing') buttons.push(`<button class="action-btn btn-success" onclick="event.stopPropagation(); updateStatus(${order.id}, 'shipped')">Отправить</button>`);
+            else if (order.status === 'shipped') buttons.push(`<button class="action-btn btn-success" onclick="event.stopPropagation(); updateStatus(${order.id}, 'delivered')">Доставлен</button>`);
+            buttons.push(`<button class="action-btn btn-telegram" onclick="event.stopPropagation(); sendToTelegram(${order.id})">✈️ Telegram</button>`);
+            return buttons.join('');
+        }
+
+        function updateStats() {
+            document.getElementById('stat-new').textContent = orders.filter(o => o.status === 'pending').length;
+            document.getElementById('stat-processing').textContent = orders.filter(o => o.status === 'processing').length;
+            const todayRevenue = orders.filter(o => o.status === 'delivered' && new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + parseFloat(o.final_amount), 0);
+            document.getElementById('stat-revenue').textContent = todayRevenue.toFixed(0);
+        }
+
+        function filterOrders(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-filter="${status}"]`).classList.add('active');
+            renderOrders();
+        }
+
+        async function updateStatus(orderId, status) {
+            try {
+                const res = await fetch(`${API_URL}/crm/orders/${orderId}/status`, {
+                    method: 'PATCH', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('crm_token')},
+                    body: JSON.stringify({status})
+                });
+                if (res.ok) { showToast('✅ Статус обновлён'); await loadOrders(); if (ws) ws.send(JSON.stringify({type: 'status_update', orderId, status})); }
+            } catch (e) { showToast('❌ Ошибка'); }
+        }
+
+        async function syncFromTelegram() {
+            const btn = document.getElementById('sync-btn');
+            btn.classList.add('spinning');
+            try {
+                const res = await fetch(`${API_URL}/crm/sync/telegram`, { method: 'POST', headers: {'Authorization': 'Bearer ' + localStorage.getItem('crm_token')} });
+                if (res.ok) { showToast('✈️ Синхронизировано'); await loadOrders(); }
+            } catch (e) { showToast('❌ Ошибка'); }
+            finally { setTimeout(() => btn.classList.remove('spinning'), 500); }
+        }
+
+        async function sendToTelegram(orderId) {
+            try {
+                await fetch(`${API_URL}/crm/orders/${orderId}/notify`, { method: 'POST', headers: {'Authorization': 'Bearer ' + localStorage.getItem('crm_token')} });
+                showToast('✈️ Отправлено в Telegram');
+            } catch (e) { showToast('❌ Ошибка'); }
+        }
+
+        async function exportData(format) {
+            try {
+                const res = await fetch(`${API_URL}/export/${format}`, { headers: {'Authorization': 'Bearer ' + localStorage.getItem('crm_token')} });
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `orders_${new Date().toISOString().slice(0,10)}.${format}`;
+                    a.click();
+                    showToast(`✅ Экспорт ${format.toUpperCase()} завершён`);
+                }
+            } catch (e) { showToast('❌ Ошибка экспорта'); }
+        }
+
+        function showOrderDetail(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            const initials = order.user_name ? order.user_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) : '?';
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="customer-block" style="margin-bottom: 24px;">
+                    <div class="avatar" style="width: 64px; height: 64px; font-size: 24px; border-radius: 20px;">${initials}</div>
+                    <div class="customer-info">
+                        <div class="customer-name" style="font-size: 20px;">${order.user_name || 'Неизвестный клиент'}</div>
+                        <div class="customer-phone" style="font-size: 16px;">${order.phone || 'Нет телефона'}</div>
+                    </div>
+                </div>
+                <div class="detail-section"><div class="detail-label">Адрес доставки</div><div class="detail-value">${order.shipping_address || 'Не указан'}</div></div>
+                <div class="detail-section"><div class="detail-label">Состав заказа</div><div class="items-list" style="margin-top: 12px;">
+                    ${order.items.map(item => `<div class="item-row" style="padding: 12px 0;"><div><div style="font-weight: 700;">${item.name}</div><div style="color: var(--text-light); font-size: 13px; margin-top: 4px;">${item.price} ₽ x ${item.quantity}</div></div><div style="font-weight: 800;">${(item.price * item.quantity).toFixed(0)} ₽</div></div>`).join('')}
+                </div></div>
+                <div class="order-total" style="font-size: 24px; margin: 24px 0;"><span>Общая сумма</span><span class="total-price">${order.final_amount} ₽</span></div>
+                ${order.discount_amount > 0 ? `<div style="color: var(--success); font-size: 16px; margin-bottom: 16px;">Скидка по промокоду: -${order.discount_amount} ₽</div>` : ''}
+                <div style="display: grid; gap: 12px;">
+                    ${order.status === 'pending' ? `<button class="action-btn btn-primary" style="width: 100%;" onclick="updateStatus(${order.id}, 'processing'); closeModal();">Взять в обработку</button>` : ''}
+                    ${order.status === 'processing' ? `<button class="action-btn btn-success" style="width: 100%;" onclick="updateStatus(${order.id}, 'shipped'); closeModal();">Отметить отправленным</button>` : ''}
+                    <button class="action-btn btn-telegram" style="width: 100%;" onclick="sendToTelegram(${order.id})">Отправить уведомление клиенту</button>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(e) { if (!e || e.target.id === 'modal') { document.getElementById('modal').classList.remove('active'); document.body.style.overflow = ''; } }
+        function showToast(text) { const el = document.getElementById('toast'); el.textContent = text; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2500); }
+        function showTab(tab) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active'); if (tab === 'orders') loadOrders(); }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/orders`);
+            ws.onmessage = () => { showToast('📡 Новое обновление'); loadOrders(); };
+            ws.onclose = () => setTimeout(connectWebSocket, 3000);
+        }
+
+        if (!localStorage.getItem('crm_token')) localStorage.setItem('crm_token', 'demo-token');
+        loadOrders();
+        connectWebSocket();
+    </script>
+</body>
+</html>
