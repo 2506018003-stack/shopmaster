@@ -1,44 +1,52 @@
 services:
   - type: web
     name: shopmaster-api
-    env: python
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    env: docker
+    dockerCommand: uvicorn api.main:app --host 0.0.0.0 --port 8000
     envVars:
-      - key: BOT_TOKEN
-        sync: false
       - key: ADMIN_IDS
         value: "7804481895"
-      - key: DATABASE_URL
-        value: "sqlite+aiosqlite:///./shopmaster.db"
-      - key: REDIS_URL
-        value: "redis://localhost:6379/0"
       - key: WEBAPP_URL
-        value: https://telegram-autoposter-z0dw.onrender.com/miniapp
+        value: "https://shopmaster-c3oo.onrender.com/miniapp"
       - key: CRM_URL
-        value: https://telegram-autoposter-z0dw.onrender.com/crm
+        value: "https://shopmaster-c3oo.onrender.com/crm"
+      - key: WEBHOOK_SECRET
+        value: "rx13r2xr2"
+      - key: DEBUG
+        value: "true"
+      # Следующие ключи не будут перезаписываться при деплое, 
+      # их нужно будет вставить вручную в панели Render:
+      - key: BOT_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
       - key: PAYMENT_PROVIDER_TOKEN
         sync: false
       - key: SECRET_KEY
-        generateValue: true
-      - key: WEBHOOK_SECRET
-        generateValue: true
-      - key: DEBUG
-        value: "true"
+        sync: false
 
   - type: worker
     name: shopmaster-bot
-    env: python
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m bot.main
+    env: docker
+    dockerCommand: python -m bot.main
     envVars:
-      - key: BOT_TOKEN
-        sync: false
       - key: ADMIN_IDS
         value: "7804481895"
+      - key: WEBAPP_URL
+        value: "https://shopmaster-c3oo.onrender.com/miniapp"
+      - key: CRM_URL
+        value: "https://shopmaster-c3oo.onrender.com/crm"
+      - key: DEBUG
+        value: "true"
+      - key: BOT_TOKEN
+        sync: false
       - key: DATABASE_URL
-        value: "sqlite+aiosqlite:///./shopmaster.db"
+        sync: false
       - key: REDIS_URL
-        value: "redis://localhost:6379/0"
+        sync: false
+      - key: PAYMENT_PROVIDER_TOKEN
+        sync: false
+      - key: SECRET_KEY
+        sync: false
