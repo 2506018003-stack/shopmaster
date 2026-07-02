@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
@@ -45,9 +45,22 @@ async def cmd_start(message: Message):
         result = await session.execute(select(User).where(User.id == message.from_user.id))
         user = result.scalar_one()
 
+    is_admin = message.from_user.id in settings.ADMIN_IDS
     await message.answer(
         i18n.get("welcome", name=message.from_user.first_name),
-        reply_markup=get_main_menu(i18n, is_admin=user.is_admin)
+        reply_markup=get_main_menu(i18n, is_admin=is_admin)
+    )
+
+@router.message(Command("help"))
+async def help_handler(message: Message):
+    await message.answer(
+        "🛒 <b>ShopMaster — как пользоваться</b>\n\n"
+        "🛍 <b>Каталог</b> — посмотреть и выбрать товары\n"
+        "🛒 <b>Корзина</b> — добавленные товары и оформление заказа\n"
+        "📦 <b>Мои заказы</b> — статус и история покупок\n"
+        "📞 <b>Поддержка</b> — связаться с нами\n\n"
+        "Если у вас есть вопросы, напишите нам: @support_manager\n"
+        "⏰ Работаем с 9:00 до 21:00 МСК"
     )
 
 @router.message(F.text == "📞 Поддержка")
