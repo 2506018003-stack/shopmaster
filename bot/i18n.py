@@ -34,9 +34,7 @@ class Translations:
 
 TRANSLATIONS: Dict[str, Translations] = {
     "ru": Translations(
-        welcome="👋 Привет, <b>{name}</b>!
-
-Добро пожаловать в <b>ShopMaster</b>",
+        welcome="👋 Привет, <b>{name}</b>!\n\nДобро пожаловать в <b>ShopMaster</b>",
         catalog="🛍 Каталог",
         cart="🛒 Корзина",
         orders="📦 Мои заказы",
@@ -57,10 +55,7 @@ TRANSLATIONS: Dict[str, Translations] = {
         enter_phone="📱 Введите номер телефона:",
         confirm_order="📋 Подтвердите заказ:",
         payment_success="🎉 Оплата прошла успешно!",
-        new_order_notification="💰 <b>Новая оплата!</b>
-
-Заказ #{order_id}
-Сумма: {amount} ₽",
+        new_order_notification="💰 <b>Новая оплата!</b>\n\nЗаказ #{order_id}\nСумма: {amount} ₽",
         status_updated="✅ Статус обновлён",
         stats_new_orders="Новые",
         stats_processing="В работе",
@@ -69,9 +64,7 @@ TRANSLATIONS: Dict[str, Translations] = {
         sync_error="❌ Ошибка синхронизации"
     ),
     "en": Translations(
-        welcome="👋 Hello, <b>{name}</b>!
-
-Welcome to <b>ShopMaster</b>",
+        welcome="👋 Hello, <b>{name}</b>!\n\nWelcome to <b>ShopMaster</b>",
         catalog="🛍 Catalog",
         cart="🛒 Cart",
         orders="📦 My Orders",
@@ -92,10 +85,7 @@ Welcome to <b>ShopMaster</b>",
         enter_phone="📱 Enter phone number:",
         confirm_order="📋 Confirm your order:",
         payment_success="🎉 Payment successful!",
-        new_order_notification="💰 <b>New payment!</b>
-
-Order #{order_id}
-Amount: {amount} ₽",
+        new_order_notification="💰 <b>New payment!</b>\n\nOrder #{order_id}\nAmount: {amount} ₽",
         status_updated="✅ Status updated",
         stats_new_orders="New",
         stats_processing="Processing",
@@ -104,9 +94,7 @@ Amount: {amount} ₽",
         sync_error="❌ Sync error"
     ),
     "uz": Translations(
-        welcome="👋 Salom, <b>{name}</b>!
-
-<b>ShopMaster</b>ga xush kelibsiz",
+        welcome="👋 Salom, <b>{name}</b>!\n\n<b>ShopMaster</b>ga xush kelibsiz",
         catalog="🛍 Katalog",
         cart="🛒 Savat",
         orders="📦 Buyurtmalarim",
@@ -127,10 +115,7 @@ Amount: {amount} ₽",
         enter_phone="📱 Telefon raqamingizni kiriting:",
         confirm_order="📋 Buyurtmani tasdiqlang:",
         payment_success="🎉 To'lov muvaffaqiyatli!",
-        new_order_notification="💰 <b>Yangi to'lov!</b>
-
-Buyurtma #{order_id}
-Summa: {amount} ₽",
+        new_order_notification="💰 <b>Yangi to'lov!</b>\n\nBuyurtma #{order_id}\nSumma: {amount} ₽",
         status_updated="✅ Status yangilandi",
         stats_new_orders="Yangi",
         stats_processing="Ishlanmoqda",
