@@ -21,7 +21,7 @@ async def show_orders(message: Message):
         text = "📦 <b>Ваша история заказов:</b>\n\n"
         for order in orders:
             status_emoji = {"pending": "⏳", "processing": "📦", "shipped": "🚚", "delivered": "✅", "cancelled": "❌"}
-            text += f"#{order.id} {status_emoji.get(order.status.value, "❓")} {order.status.value.upper()} — {order.final_amount} ₽\n"
+            text += f"#{order.id} {status_emoji.get(order.status.value, '❓')} {order.status.value.upper()} — {order.final_amount} ₽\n"
             text += f"   📍 {order.shipping_address[:30]}...\n\n"
 
         await message.answer(text)
