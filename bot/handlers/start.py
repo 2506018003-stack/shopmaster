@@ -59,7 +59,7 @@ async def help_handler(message: Message):
         "🛒 <b>Корзина</b> — добавленные товары и оформление заказа\n"
         "📦 <b>Мои заказы</b> — статус и история покупок\n"
         "📞 <b>Поддержка</b> — связаться с нами\n\n"
-        "Если у вас есть вопросы, напишите нам: @support_manager\n"
+        "Если у вас есть вопросы, напишите нам: @tgbothelp_infinityfree\n"
         "⏰ Работаем с 9:00 до 21:00 МСК"
     )
 
@@ -67,6 +67,6 @@ async def help_handler(message: Message):
 async def support_handler(message: Message):
     await message.answer(
         "📞 <b>Служба поддержки</b>\n\n"
-        "Если у вас есть вопросы, напишите нам: @support_manager\n\n"
+        "Если у вас есть вопросы, напишите нам: @tgbothelp_infinityfree\n\n"
         "⏰ Работаем с 9:00 до 21:00 МСК"
     )
