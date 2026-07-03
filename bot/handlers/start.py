@@ -70,3 +70,23 @@ async def support_handler(message: Message):
         "Если у вас есть вопросы, напишите нам: @tgbothelp_infinityfree\n\n"
         "⏰ Работаем с 9:00 до 21:00 МСК"
     )
+
+@router.message(Command("admin_help"))
+async def admin_help_handler(message: Message):
+    if message.from_user.id not in settings.ADMIN_IDS:
+        return
+    await message.answer(
+        "🔧 <b>Админ-команды</b>\n\n"
+        "<b>Промокоды:</b>\n"
+        "<code>/promo_create КОД ТИП ЗНАЧЕНИЕ ЛИМИТ [МИН_СУММА] [МАКС_СКИДКА]</code>\n"
+        "Пример: <code>/promo_create SALE2024 percent 20 100</code>\n"
+        "Типы: <code>percent</code> — %, <code>fixed</code> — фикс. сумма в ₽\n\n"
+        "<code>/promo_list</code> — список промокодов со статистикой\n\n"
+        "<b>Заказы и статистика:</b>\n"
+        "<code>/stats</code> — новые заказы, выручка, топ товаров\n"
+        "<code>/export_excel</code> / <code>/export_csv</code> — выгрузка заказов\n\n"
+        "<b>CRM:</b>\n"
+        f"{settings.CRM_URL} — смена статуса заказа, деактивация промокодов, экспорт\n\n"
+        "<b>Добавление товара</b> (через API, нужен admin JWT) — см. FAQ.md на сервере.",
+        disable_web_page_preview=True
+    )
